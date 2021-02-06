@@ -20,6 +20,8 @@ from shutil import copyfile,rmtree
 # import objgraph
 from configparser import ConfigParser
 
+from mobileperf.android.adb_device_utils import deal_result
+
 BaseDir=os.path.dirname(__file__)
 sys.path.append(os.path.join(BaseDir,'../..'))
 
@@ -48,7 +50,17 @@ class StartUp(object):
         logger.debug("RuntimeData.top_dir:"+RuntimeData.top_dir)
         self.config_dic = self.parse_data_from_config()
         RuntimeData.config_dic = self.config_dic
-        self.serialnum = device_id if device_id != None else self.config_dic['serialnum']#代码中重新传入device_id 则会覆盖原来配置文件config.conf的值，主要为了debug方便
+
+        # get device serialnum
+        # old code
+        # self.serialnum = device_id if device_id != None else self.config_dic['serialnum']#代码中重新传入device_id 则会覆盖原来配置文件config.conf的值，主要为了debug方便
+        # new code
+        isHaveDevice, deviceNum = deal_result()
+        if isHaveDevice == False:
+            print("dont have the device")
+            return
+        self.serialnum = deviceNum[0]  # 代码中重新传入device_id 则会覆盖原来配置文件config.conf的值，主要为了debug方便
+
         self.packages = package if package != None else self.config_dic['package']#代码中重新传入package 则会覆盖原来配置文件config.conf的值，为了debug方便
         self.frequency = interval if interval != None else self.config_dic['frequency']#代码中重新传入interval 则会覆盖原来配置文件config.conf的值，为了debug方便
         self.timeout = self.config_dic['timeout']
